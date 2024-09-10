@@ -58,9 +58,9 @@ func ShowTrainingInfo(action int, trainingType string, duration, weight, height 
 		calories := WalkingSpentCalories(action, duration, weight, height) // вызовите здесь необходимую функцию
 		return fmt.Sprintf("Тип тренировки: %s\nДлительность: %.2f ч.\nДистанция: %.2f км.\nСкорость: %.2f км/ч\nСожгли калорий: %.2f\n", trainingType, duration, distance, speed, calories)
 	case trainingType == "Плавание":
-		distance := distance(action)                           // вызовите здесь необходимую функцию
-		speed := swimmingMeanSpeed(action, 0.0, 0.0)           // вызовите здесь необходимую функцию
-		calories := SwimmingSpentCalories(action, 1, 0.0, 0.0) // вызовите здесь необходимую функцию
+		distance := distance(action)                                               // вызовите здесь необходимую функцию
+		speed := swimmingMeanSpeed(lengthPool, countPool, duration)                // вызовите здесь необходимую функцию
+		calories := SwimmingSpentCalories(lengthPool, countPool, duration, weight) // вызовите здесь необходимую функцию
 		return fmt.Sprintf("Тип тренировки: %s\nДлительность: %.2f ч.\nДистанция: %.2f км.\nСкорость: %.2f км/ч\nСожгли калорий: %.2f\n", trainingType, duration, distance, speed, calories)
 	default:
 		return "неизвестный тип тренировки"
@@ -111,7 +111,8 @@ func WalkingSpentCalories(action int, duration, weight, height float64) float64 
 	if action == 0 {
 		return 0
 	}
-	walkingCal := ((walkingCaloriesWeightMultiplier*ВесСпортсменаВКг + (СредняяСкоростьВМетрахВСекунду**2/РостВМетрах)*walkingSpeedHeightMultiplier*ВесСпортсменаВКг) * ВремяТренировкиВЧасах * minInH)
+
+	walkingCal := ((walkingCaloriesWeightMultiplier*weight + (meanSpeed(action, duration)*2/height)*walkingSpeedHeightMultiplier*weight) * duration * minInH)
 
 	return walkingCal
 }
@@ -146,7 +147,13 @@ func swimmingMeanSpeed(lengthPool, countPool int, duration float64) float64 {
 // weight float64 — вес пользователя.
 func SwimmingSpentCalories(lengthPool, countPool int, duration, weight float64) float64 {
 	// ваш код здесь
-	return 2.2
+	if countPool == 0 {
+		return 0
+	}
+
+	swimmingCal := ((swimmingMeanSpeed(lengthPool, countPool, duration) + swimmingCaloriesMeanSpeedShift) * swimmingCaloriesWeightMultiplier * weight * duration)
+
+	return swimmingCal
 }
 
 // showMessage выводит на печать сообщение трекера.
@@ -160,13 +167,13 @@ func showMessage(s string) {
 
 func main() {
 
-	action := 10000       // action int — количество совершенных действий(число шагов при ходьбе и беге, либо гребков при плавании).
-	trainingType := "Бег" // trainingType string — вид тренировки(Бег, Ходьба, Плавание).
-	weight := 85.0        // weight float64 — вес пользователя.
-	height := 1.8         // height float64 — рост пользователя.
-	duration := 1.0       // duration float64 — длительность тренировки в часах.
-	lengthPool := 50      // lengthPool int — длина бассейна в метрах.
-	countPool := 3        // countPool int — сколько раз пользователь переплыл бассейн.
+	action := 50000            // action int — количество совершенных действий(число шагов при ходьбе и беге, либо гребков при плавании).
+	trainingType := "Плавание" // trainingType string — вид тренировки(Бег, Ходьба, Плавание).
+	weight := 85.0             // weight float64 — вес пользователя.
+	height := 1.8              // height float64 — рост пользователя.
+	duration := 1.0            // duration float64 — длительность тренировки в часах.
+	lengthPool := 50           // lengthPool int — длина бассейна в метрах.
+	countPool := 3             // countPool int — сколько раз пользователь переплыл бассейн.
 
 	//ShowTrainingInfo(action int, trainingType string, duration, weight, height float64, lengthPool, countPool int)
 	showMessage(ShowTrainingInfo(action, trainingType, duration, weight, height, lengthPool, countPool))
